@@ -1,0 +1,1 @@
+head(life_style)
