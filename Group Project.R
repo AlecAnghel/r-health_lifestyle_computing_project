@@ -1,12 +1,14 @@
 library(janitor)
-sleep <- clean_names(sleep)
-lifestyle <- clean_names(lifestyle)
+student_performance <- clean_names(student_performance)
+performance_fac <- clean_names(performance_fac)
+exam_scores <- clean_names(exam_scores)
+
 
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(tidyverse)
 
-ggplot(sleep, aes(x = physical_activity_level, y = quality_of_sleep))+
-  geom_point()+
-  geom_smooth()
+ggplot(performance_fac, aes(x = teacher_quality, y = exam_score))+
+  geom_boxplot()
+
