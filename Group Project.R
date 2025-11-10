@@ -70,7 +70,3 @@ teacher_quality_school_breakdown <- performance_fac %>%
 
 # Print result for teacher quality by school type
 print(teacher_quality_school_breakdown)
-
-
-
-
