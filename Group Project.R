@@ -15,7 +15,7 @@ ggplot(performance_fac, aes(x = teacher_quality, y = exam_score))+
 # Comparing categorical variables (comparing family income and school type)
 p <- ggplot(performance_fac, aes(x = family_income, fill = school_type)) +
   geom_bar(position = "dodge") +
-  labs(title = "Comparison of Family Income and School Type",
+  labs(title = "Family Income and School Type",
        x = "Family Income",
        y = "Count") +
   theme_minimal() +
@@ -29,7 +29,7 @@ p_interactive_FamilyIncome_SchoolType
 # School type vs teacher quality plot
 p2<-ggplot(performance_fac, aes(x = school_type, fill = teacher_quality)) +
   geom_bar(position = "dodge") +
-  labs(title = "Comparison of School Type and Teacher Quality",
+  labs(title = "School Type and Teacher Quality",
        x = "School Type",
        y = "Count") +
   theme_minimal() +
