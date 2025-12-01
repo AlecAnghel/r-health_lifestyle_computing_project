@@ -99,3 +99,28 @@ p4 <- ggplot(ExamScores, aes(hours_studied,attendance_percent))+
 # NOT MUCH OF A RELATIONSHIP
 p_interactive_HoursStudied_AttendancePercent <- ggplotly(p4)
 p_interactive_HoursStudied_AttendancePercent
+
+# Average Final Score
+AcademicPerformance <- AcademicPerformance |> 
+  mutate(
+    OverallScore = ((math_score+reading_score+writing_score)/3),
+    LetterGrade = case_when(
+      OverallScore >= 93 ~ "A",
+      OverallScore >= 90 ~ "A-",
+      OverallScore >= 87 ~ "B+",
+      OverallScore >= 83 ~ "B",
+      OverallScore >= 80 ~ "B-",
+      OverallScore >= 77 ~ "C+",
+      OverallScore >= 73 ~ "C",
+      OverallScore >= 70 ~ "C-",
+      OverallScore >= 60 ~ "D",
+      TRUE             ~ "F"
+    )
+  )
+
+# Round Final
+AcademicPerformance <- AcademicPerformance |>
+  mutate(
+    OverallScore = round(OverallScore)
+  )
+  
