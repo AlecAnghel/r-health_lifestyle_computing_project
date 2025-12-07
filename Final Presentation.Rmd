@@ -1,0 +1,267 @@
+---
+title: "Final Presentation"
+output: slidy_presentation
+date: "2025-12-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggthemes)
+library(scales)
+library(ggrepel)
+library(patchwork)
+library(plotly)
+StudentPerformanceFactors <- read.csv("StudentPerformanceFactors.csv")
+student_exam_scores <- read.csv("student_exam_scores.csv")
+AcademicPerformance <- read.csv("AcademicPerformance.csv")
+## Cleaning the Exam_Score variable for outliers (scores less than 0 or greater than 100, because they are impossible in this case)
+SPFcleaned <- StudentPerformanceFactors |> 
+  mutate(Exam_Score = if_else(Exam_Score < 0 | Exam_Score > 100, NA, Exam_Score))
+# Re-ordered motivation variable to go from low to medium to high
+NEW_Motivation_Level <- c("Low", "Medium", "High")
+SPFcleaned$Motivation_Level <- factor(SPFcleaned$Motivation_Level, levels = NEW_Motivation_Level)
+print(levels(SPFcleaned$Motivation_Level))
+## Cleaning the exam_score variable for outliers in the Student Exam Scores data set (scores less than 0 or greater than 55, because the grading scale is only that range)
+SES2 <- student_exam_scores |> 
+  mutate(exam_score = if_else(exam_score < 0 | exam_score > 55, NA, exam_score))
+# Prepare data for plotting test scores by lunch status
+plot_data <- AcademicPerformance |>
+  select(lunch, math.score, reading.score, writing.score) |>
+  pivot_longer(
+    cols = c(math.score, reading.score, writing.score),
+    names_to = "subject",
+    values_to = "score"
+  )
+SPFcleaned <- StudentPerformanceFactors |> 
+  mutate(Exam_Score = if_else(Exam_Score < 0 | Exam_Score > 100, NA, Exam_Score))
+#Creating new variable that only includes students with learning disabilities                      
+learning_disability = StudentPerformanceFactors |> filter(Learning_Disabilities == "Yes")
+
+#Plot for Previous Score vs Exam Score for students with learning disability 
+LD3 <- ggplot(learning_disability, aes(x = Previous_Scores, y = Exam_Score)) +
+  geom_jitter() +
+  geom_smooth() +
+  labs(
+    title = "Previous Score vs Exam Score",
+    subtitle = "Student Performance Factors Dataset",
+    x = "Previous Score",
+    y = "Exam Score",
+  )
+ggplotly(LD3)
+                    
+                    
+#Creating new variable that only includes students without learning disabilities            
+no_disability = StudentPerformanceFactors |> filter(Learning_Disabilities == "No")
+
+#Plot for Previous Score vs Exam Score for students without learning disability
+NLD <- ggplot(no_disability, aes(x = Previous_Scores, y = Exam_Score)) +
+  geom_jitter() +
+  geom_smooth() +
+  labs(
+    title = "Previous Score vs Exam Score",
+    subtitle = "Student Performance Factors Dataset",
+    x = "Previous Score",
+    y = "Exam Score",
+  )
+ggplotly(NLD)
+```
+
+## An Exploration of Lifestyle Attributes on Student Academic Performance
+
+Names: Elsa Mathew-Lewis, Emily Sun, tAlec Anghel, Aoun Hakim
+
+## The Number of Hours Spent Studying Has a Positive Linear Association with Exam Score - Those who study more appear to perform better
+```{r}
+SES2_HSbyES <- ggplot(SES2, aes(x = hours_studied, y = exam_score)) +
+  geom_point() +
+  geom_smooth() +
+  labs(
+    title = "The Impact of Hours Spent Studying on Grades",
+    subtitle = "Exam Score Increases with Time Spent Studying",
+    x = "Hours Studied per Week",
+    y = "Exam Score (out of 55)",
+    caption = "Source: Kaggle via Muhammad Shoaib"
+  )
+
+ggplotly(SES2_HSbyES)
+```
+
+
+## Student's Motivation Level Appears to Have Little to No Impact on Amount of Time Spent Studying and Exam Scores
+```{r}
+basicSPFggplot_facet <- ggplot(SPFcleaned, aes(x = Hours_Studied, y = Exam_Score)) +
+  geom_point(aes(color = Motivation_Level, shape = Motivation_Level)) +
+  geom_smooth() +
+  facet_wrap(~ Motivation_Level) +  
+  labs(
+    title = "The Impact of Hours Spent Studying on Grades",
+    subtitle = "Exam Score Increases with Time Spent Studying",
+    x = "Hours Studied per Week",
+    y = "Exam Score (out of 100)",
+    color = "Motivation Level", shape = "Motivation Level",
+    caption = "Source: Kaggle via Lai Ng"
+  ) +
+  scale_color_colorblind()
+
+ggplotly(basicSPFggplot_facet)
+```
+
+
+## Students with standard lunch tend to have higher score on math, reading, and writing.
+```{r}
+ggplot(plot_data, aes(x = lunch, y = score, fill = lunch)) +
+  geom_boxplot(show.legend = FALSE) +
+  facet_wrap(~ subject, nrow = 1,
+             labeller = labeller(
+               subject = c(
+                 "math.score" = "Math",
+                 "reading.score" = "Reading",
+                 "writing.score" = "Writing"
+               ))) +
+  labs(
+    title = "Test Scores by Lunch Status",
+    subtitle = "students with standard lunch tend to have higher score on math, reading, and writing",
+    x = "Lunch status",
+    y = "Score",
+    caption = "Source: Academic Performance dataset"
+  ) +
+  scale_x_discrete(labels = c("free/reduced" = "Free / Reduced",
+                              "standard"    = "Standard")) +
+  theme_minimal(base_size = 12)
+```
+
+## There is a Much Higher Number of Low to Medium Income Families with Children in Public School than Private School
+```{r}
+NEW_Family_Income <- c("Low", "Medium", "High")
+SPFcleaned$Family_Income <- factor(SPFcleaned$Family_Income, levels = NEW_Family_Income)
+p <- ggplot(SPFcleaned, aes(x = Family_Income, fill = School_Type)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Family Income and School Type",
+       x = "Family Income",
+       y = "Count") +
+  theme_minimal() +
+  scale_fill_manual(values = c("lightblue", "pink"))
+
+p_interactive_FamilyIncome_SchoolType <- ggplotly(p)
+p_interactive_FamilyIncome_SchoolType
+```
+
+## Students without Learning Disabilities Have a Stronger Relationship between the Amount of Hours They Study and Their Exam Scores
+```{r}
+LD1NEW <- ggplot(SPFcleaned, aes(x = Hours_Studied, y = Exam_Score, color = Learning_Disabilities)) +
+                      geom_jitter() +
+                      geom_smooth() +
+                      labs(
+                        title = "Hours Studied vs Exam Score",
+                        subtitle = "Student Performance Factors Dataset",
+                        x = "Hours Studied",
+                        y = "Exam Score",
+                        color = "Learning Disability"
+                      )
+ggplotly(LD1NEW) 
+```
+
+## There Doesn't Appear to Be a Significant Difference In the Relationship Between Previous Exams Scores and Current Scores for Students with and without Learning Disabilities
+```{r}
+ldd = StudentPerformanceFactors |> mutate(ld = case_when(
+                      Learning_Disabilities == "Yes" ~ "Has Learning Disability",
+                      Learning_Disabilities == "No" ~ "No Learning Disability"
+                    ))
+LD_vs_NLD <- ggplot(ldd, aes(x = Previous_Scores, y = Exam_Score)) +
+                      geom_jitter() +
+                      facet_wrap(~ ld) +
+                      geom_smooth() +
+                      labs(
+                        title = "Previous Score vs Exam Score",
+                        subtitle = "Student Performance Factors Dataset",
+                        x = "Previous Score",
+                        y = "Exam Score"
+                      )
+ggplotly(LD_vs_NLD)
+```
+
+## Students Test Performance Indicates a Very Strong, Positive, and Linear Correlation between Writing Scores and Reading Scores 
+```{r}
+     ggplot(AcademicPerformance, aes(x = writing.score, y = reading.score)) +
+                      geom_jitter() +
+                      geom_smooth() +
+                      labs(
+                        title = "Writing vs Reading Scores",
+                        subtitle = "Student Performance Dataset",
+                        x = "Writing Score",
+                        y = "Reading Score"
+                      )
+```
+
+## Gender's Effect on Test Performance: Males Perform Better in Math on Average
+```{r}
+ genderandmath <- ggplot(AcademicPerformance, aes(x = gender, y = math.score)) +
+                      geom_boxplot() +
+                      labs(
+                        title = "Gender effect on Math Scores",
+                        subtitle = "Student Performance Dataset",
+                        x = "Gender",
+                        y = "Math Score"
+                      )
+                    ggplotly(genderandmath)
+```
+
+## Gender's Effect on Test Performance: Females Perform Better in Reading on Average
+```{r}
+genderandreading <- ggplot(AcademicPerformance, aes(x = gender, y = reading.score)) +
+                      geom_boxplot() +
+                      labs(
+                        title = "Gender effect on Reading Scores",
+                        subtitle = "Student Performance Dataset",
+                        x = "Gender",
+                        y = "Reading Score"
+                      )
+                    ggplotly(genderandreading)
+```
+
+## Lunch Status Effect on Reading Score: Reveals That Students with Lower Income Perform Worse
+```{r}
+ lunch_statusandreading <-ggplot(AcademicPerformance, aes(x = lunch, y = reading.score)) +
+                      geom_boxplot() +
+                      labs(
+                        title = "Lunch status effect on Reading Scores",
+                        subtitle = "Student Performance Dataset",
+                        x = "Lunch",
+                        y = "Reading Score"
+                      )
+                   ggplotly(lunch_statusandreading)
+```
+
+## Test Prep Effect on Math: Reveals that Students Who Do Test Prep Perform Better
+```{r}
+test_prepandmath <- ggplot(AcademicPerformance, aes(x = test.preparation.course, y = math.score)) +
+                      geom_boxplot() +
+                      labs(
+                        title = "Test Preparation effect on Math Scores",
+                        subtitle = "Student Performance Dataset",
+                        x = "Test Preparation",
+                        y = "Math Score"
+                      )
+                   ggplotly(test_prepandmath)
+```
+
+## Impact of Parental Involvement on Exam Scores: Reveals that Higher Parental Involvement Correlates with Higher Exam Scores
+```{r}
+parent = StudentPerformanceFactors |> mutate(Parental_Involvement = factor(Parental_Involvement, levels = c("Low", "Medium", "High")))
+                   
+      parent_involvementandscores <- ggplot(parent, aes(x = Parental_Involvement, y = Exam_Score)) +
+                      geom_boxplot() +
+                      labs(
+                        title = r'(Parents' Involvement effect on Exam Scores)',
+                        subtitle = "Student Performance Factors Dataset",
+                        x = r"(Parents' Involvement)",
+                        y = "Exam Score"
+                      )
+      ggplotly(parent_involvementandscores)
+```
