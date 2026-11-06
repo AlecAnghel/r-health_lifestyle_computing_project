@@ -10,6 +10,12 @@ The project brings together three student datasets and presents the analysis thr
 - [Final Submission Code1.R](Final%20Submission%20Code1.R): the full exploratory analysis.
 - [RStudio project](Statistical%20Computing%20Project.Rproj): opens the repository as an R project.
 
+## Example output
+
+![Grouped bar chart comparing private- and public-school record counts across high, low, and medium family-income categories](Family%20Income%20and%20School%20Type.png)
+
+*Saved chart from the exploratory analysis of `StudentPerformanceFactors.csv`. Public-school records outnumber private-school records in each income group in this dataset. The bars show counts, not population percentages or evidence that income causes school choice.*
+
 ## What the project explores
 
 - Hours studied, attendance, sleep, motivation, and exam scores.
